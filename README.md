@@ -15,13 +15,26 @@ foreach ($fileTable->files as $file) {
 }
 ```
 
-Spr Reader:
-```require('spr.php');
-$sprite = new SpriteReader('npc.spr');
-$sprite->get_header();
-$sprite->get_frames();
-$sprite->get_palette();
-$sprite->get_frame_data(1);
-$img = $sprite->get_frame_image(1, 'gif');
-file_put_contents('npc.gif', $img);
+Sprite Reader:
+```include('DataReader.php');
+include('Sprite.php');
+include('SpriteFrame.php');
+include('Palette.php');
+
+$elderSprite = new Sprite(
+    new DataReader('elder.spr')
+    );
+file_put_contents('test.gif', $elderSprite->getImage(13));
+```
+
+DataReader:
+```construct($dataSource, $type = PHPRO_DATA_FILE)
+
+dataTypes: PHPRO_DATA_FILE, PHPRO_DATA_STRING
+```
+
+getImage:
+```getImage($frameNumber, $imageType = PHPRO_IMG_GIF)
+
+imageTypes: PHPRO_IMG_GIF, PHPRO_IMG_PNG, PHPRO_IMG_JPG
 ```
