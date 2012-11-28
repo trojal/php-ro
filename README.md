@@ -29,13 +29,13 @@ Sprite Reader:
     file_put_contents('test.gif', $elderSprite->getImage(13));
 
 
-DataReader:
+DataReader constants:
 
     construct($dataSource, $type = PHPRO_DATA_FILE)
     dataTypes: PHPRO_DATA_FILE, PHPRO_DATA_STRING
 
 
-getImage:
+getImage constants:
 
     getImage($frameNumber, $imageType = PHPRO_IMG_GIF)
     imageTypes: PHPRO_IMG_GIF, PHPRO_IMG_PNG, PHPRO_IMG_JPG
