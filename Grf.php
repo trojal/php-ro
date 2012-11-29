@@ -25,7 +25,10 @@ class Grf
         $this->files = array();
 
         while (strlen($fileData)) {
-            sscanf($fileData, "%s", $fileName);
+            $endPointer = 0;
+            while (ord($fileData[++$endPointer])!=0);
+
+            $fileName = substr($fileData, 0, $endPointer);
             $fileData = substr($fileData, strlen($fileName)+1);
 
             $file = unpack('LzSize/LzSizeAl/Lsize/cflags/Loffset', $fileData);
@@ -55,8 +58,10 @@ class Grf
 
             $fileData = substr($this->fileTable, $fileStart);
 
-            sscanf($fileData, "%s", $fileName);
+            $endPointer = 0;
+            while (ord($fileData[++$endPointer])!=0);
 
+            $fileName = substr($fileData, 0, $endPointer);
             $fileData = substr($fileData, strlen($fileName)+1);
 
             $file = unpack('LzSize/LzSizeAl/Lsize/cflags/Loffset', $fileData);
