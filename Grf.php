@@ -24,18 +24,20 @@ class Grf
 
         $this->files = array();
 
-        while (strlen($fileData)) {
-            $endPointer = 0;
+        $fileDataSize = strlen($fileData);
+        $fileDataPointer = 0;
+        while ($fileDataPointer < $fileDataSize) {
+            $endPointer = $fileDataPointer;
             while (ord($fileData[++$endPointer])!=0);
 
-            $fileName = substr($fileData, 0, $endPointer);
-            $fileData = substr($fileData, strlen($fileName)+1);
+            $fileName = substr($fileData, $fileDataPointer, $endPointer - $fileDataPointer);
+            $fileDataPointer = $endPointer+1;
 
-            $file = unpack('LzSize/LzSizeAl/Lsize/cflags/Loffset', $fileData);
+            $file = unpack('LzSize/LzSizeAl/Lsize/cflags/Loffset', substr($fileData, $fileDataPointer, 0x11));
 
             $this->files[utf8_encode($fileName)] = $file;
 
-            $fileData = substr($fileData, 0x11);
+            $fileDataPointer += 0x11;
         }
 
         return $this->files;
