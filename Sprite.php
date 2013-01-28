@@ -43,14 +43,14 @@ class Sprite
         );
 
         if ($frame->header['type'] == PHPRO_FRAME_TYPE_PALETTE) {
-            foreach ($this->palette->colors as $i=>$color) {
+            foreach ($this->palette->colors as $i => $color) {
                 $resourcePalette[$i] = imagecolorallocatealpha($image, $color['r'], $color['g'], $color['b'], $color['a']);
             }
             imagecolortransparent($image, $resourcePalette[0]);
 
             $data = $frame->data;
-            for ($i=0;$data;$i++) {
-                imagesetpixel($image, $i%$frame->header['width'], floor($i/$frame->header['width']), $resourcePalette[ord($data[0])]);
+            for ($i = 0; $data; $i++) {
+                imagesetpixel($image, $i % $frame->header['width'], floor($i / $frame->header['width']), $resourcePalette[ord($data[0])]);
                 $data = substr($data, 1);
             }
         } else if ($frame->header['type'] == PHPRO_FRAME_TYPE_RGBA) {
@@ -60,37 +60,38 @@ class Sprite
 
 
             $data = $frame->data;
-            for ($i=0;$data;$i++) {
+            for ($i = 0; $data; $i++) {
                 if (!$color = imagecolorexactalpha(
                     $image,
                     255 - ord($data[3]),
                     255 - ord($data[2]),
                     255 - ord($data[1]),
-                    127 - ord($data[0])/2
-                ))
-                $color = imagecolorallocatealpha(
-                    $image,
-                    255 - ord($data[3]),
-                    255 - ord($data[2]),
-                    255 - ord($data[1]),
-                    127 - ord($data[0])/2
-                );
-                imagesetpixel($image, $i%$frame->header['width'], floor($i/$frame->header['width']), $color);
+                    127 - ord($data[0]) / 2
+                )
+                )
+                    $color = imagecolorallocatealpha(
+                        $image,
+                        255 - ord($data[3]),
+                        255 - ord($data[2]),
+                        255 - ord($data[1]),
+                        127 - ord($data[0]) / 2
+                    );
+                imagesetpixel($image, $i % $frame->header['width'], floor($i / $frame->header['width']), $color);
                 $data = substr($data, 4);
             }
         }
 
         ob_start(null, 0);
         switch ($imageType) {
-        case PHPRO_IMG_GIF:
-            imagegif($image);
-            break;
-        case PHPRO_IMG_JPG:
-            imagejpeg($image);
-            break;
-        case PHPRO_IMG_PNG:
-            imagepng($image);
-            break;
+            case PHPRO_IMG_GIF:
+                imagegif($image);
+                break;
+            case PHPRO_IMG_JPG:
+                imagejpeg($image);
+                break;
+            case PHPRO_IMG_PNG:
+                imagepng($image);
+                break;
         }
         return ob_get_clean();
     }
@@ -133,7 +134,7 @@ class Sprite
 
         $this->frames = array();
 
-        for ($nFrame = 0;$nFrame < $this->header['frameCountPalette'];$nFrame++) {
+        for ($nFrame = 0; $nFrame < $this->header['frameCountPalette']; $nFrame++) {
             $frameHeader = array();
             $frameHeader['type'] = PHPRO_FRAME_TYPE_PALETTE;
             $frameHeader['version'] = $this->header['versionMajor'];
@@ -149,7 +150,7 @@ class Sprite
             $this->dataReader->seek($frameHeader['frameLength'], SEEK_CUR);
         }
 
-        for ($nFrame = 0;$nFrame < $this->header['frameCountRGBA'];$nFrame++) {
+        for ($nFrame = 0; $nFrame < $this->header['frameCountRGBA']; $nFrame++) {
             $frameHeader = array();
             $frameHeader['type'] = PHPRO_FRAME_TYPE_RGBA;
             $frameHeader['version'] = $this->header['versionMajor'];

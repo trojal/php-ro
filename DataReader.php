@@ -14,7 +14,7 @@ class DataReader
                 $this->dataSource = fopen($dataSource, 'r');
                 break;
             case PHPRO_DATA_STRING:
-                $this->dataSource = fopen('data://text/plain;base64,'.base64_encode($dataSource), 'r');
+                $this->dataSource = fopen('data://text/plain;base64,' . base64_encode($dataSource), 'r');
                 break;
             default:
                 throw new \Exception('Unrecognized data type.');

@@ -28,10 +28,10 @@ class Grf
         $fileDataPointer = 0;
         while ($fileDataPointer < $fileDataSize) {
             $endPointer = $fileDataPointer;
-            while (ord($fileData[++$endPointer])!=0);
+            while (ord($fileData[++$endPointer]) != 0) ;
 
             $fileName = substr($fileData, $fileDataPointer, $endPointer - $fileDataPointer);
-            $fileDataPointer = $endPointer+1;
+            $fileDataPointer = $endPointer + 1;
 
             $file = unpack('LzSize/LzSizeAl/Lsize/cflags/Loffset', substr($fileData, $fileDataPointer, 0x11));
 
@@ -45,26 +45,23 @@ class Grf
 
     public function getFile($filename)
     {
-        if (isset($this->files))
-        {
+        if (isset($this->files)) {
             $file = $this->files[$filename];
-        }
-        else
-        {
+        } else {
             $fileStart = strpos(
                 $this
-                ->requireHeaders()
-                ->fileTable,
+                    ->requireHeaders()
+                    ->fileTable,
                 utf8_decode($filename)
             );
 
             $fileData = substr($this->fileTable, $fileStart);
 
             $endPointer = 0;
-            while (ord($fileData[++$endPointer])!=0);
+            while (ord($fileData[++$endPointer]) != 0) ;
 
             $fileName = substr($fileData, 0, $endPointer);
-            $fileData = substr($fileData, strlen($fileName)+1);
+            $fileData = substr($fileData, strlen($fileName) + 1);
 
             $file = unpack('LzSize/LzSizeAl/Lsize/cflags/Loffset', $fileData);
         }
