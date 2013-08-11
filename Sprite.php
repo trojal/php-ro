@@ -2,13 +2,15 @@
 
 namespace Trojal\PhpRo;
 
-use Trojal\PhpRo\DataReader,
-    Trojal\PhpRo\SpriteFrame,
-    Trojal\PhpRo\Palette;
+use Trojal\PhpRo\DataReader;
+use Trojal\PhpRo\Palette;
+use Trojal\PhpRo\SpriteFrame;
 
 define('PHPRO_IMG_GIF', 1);
 define('PHPRO_IMG_PNG', 2);
 define('PHPRO_IMG_JPG', 3);
+define('PHPRO_IMG_GD2', 4);
+define('PHPRO_IMG_RAW', 5);
 
 define('PHPRO_SPR_HEADER_SIZE', 0x08);
 define('PHPRO_FRAME_TYPE_PALETTE', 1);
@@ -31,60 +33,67 @@ class Sprite
 
     public function getImage($frameNumber, $imageType = PHPRO_IMG_GIF)
     {
-        $frame = $this
-            ->requireHeaders()
-            ->requirePalette()
-            ->frames[$frameNumber]
-            ->requireData();
+        if (!isset($this->frames[$frameNumber]->image)) {
 
-        $image = imagecreatetruecolor(
-            $frame->header['width'],
-            $frame->header['height']
-        );
+            $frame = $this
+                ->requireHeaders()
+                ->requirePalette()
+                ->frames[$frameNumber]
+                ->requireData();
 
-        if ($frame->header['type'] == PHPRO_FRAME_TYPE_PALETTE) {
-            foreach ($this->palette->colors as $i => $color) {
-                $resourcePalette[$i] = imagecolorallocatealpha($image, $color['r'], $color['g'], $color['b'], $color['a']);
-            }
-            imagecolortransparent($image, $resourcePalette[0]);
+            $image = imagecreatetruecolor(
+                $frame->header['width'],
+                $frame->header['height']
+            );
+            imagealphablending($image, true);
 
-            $data = $frame->data;
-            for ($i = 0; $data; $i++) {
-                imagesetpixel($image, $i % $frame->header['width'], floor($i / $frame->header['width']), $resourcePalette[ord($data[0])]);
-                $data = substr($data, 1);
-            }
-        } else if ($frame->header['type'] == PHPRO_FRAME_TYPE_RGBA) {
-            imagefill($image, 0, 0, imagecolorallocatealpha($image, 0, 0, 0, 127));
-            imagealphablending($image, false);
-            imagesavealpha($image, true);
+            if ($frame->header['type'] == PHPRO_FRAME_TYPE_PALETTE) {
+                foreach ($this->palette->colors as $i => &$color) {
+                    $this->resourcePalette[$i] = imagecolorallocatealpha($image, $color['r'], $color['g'], $color['b'], $color['a']);
+                }
+                imagecolortransparent($image, $this->resourcePalette[0]);
 
+                $data = $frame->data;
+                for ($i = 0; $data; $i++) {
+                    imagesetpixel($image, $i % $frame->header['width'], floor($i / $frame->header['width']), $this->resourcePalette[ord($data[0])]);
+                    $data = substr($data, 1);
+                }
+            } else if ($frame->header['type'] == PHPRO_FRAME_TYPE_RGBA) {
+                imagefill($image, 0, 0, imagecolorallocatealpha($image, 0, 0, 0, 127));
+                imagealphablending($image, false);
+                //imagesavealpha($image, true);
 
-            $data = $frame->data;
-            for ($i = 0; $data; $i++) {
-                if (!$color = imagecolorexactalpha(
-                    $image,
-                    255 - ord($data[3]),
-                    255 - ord($data[2]),
-                    255 - ord($data[1]),
-                    127 - ord($data[0]) / 2
-                )
-                )
-                    $color = imagecolorallocatealpha(
+                $data = $frame->data;
+                for ($i = 0; $data; $i++) {
+                    if (!$color = imagecolorexactalpha(
                         $image,
                         255 - ord($data[3]),
                         255 - ord($data[2]),
                         255 - ord($data[1]),
                         127 - ord($data[0]) / 2
-                    );
-                imagesetpixel($image, $i % $frame->header['width'], floor($i / $frame->header['width']), $color);
-                $data = substr($data, 4);
+                    )
+                    )
+                        $color = imagecolorallocatealpha(
+                            $image,
+                            255 - ord($data[3]),
+                            255 - ord($data[2]),
+                            255 - ord($data[1]),
+                            127 - ord($data[0]) / 2
+                        );
+                    imagesetpixel($image, $i % $frame->header['width'], floor($i / $frame->header['width']), $color);
+                    $data = substr($data, 4);
+                }
             }
+
+            $this->frames[$frameNumber]->image = & $image;
         }
+
+        $image = & $this->frames[$frameNumber]->image;
 
         ob_start(null, 0);
         switch ($imageType) {
             case PHPRO_IMG_GIF:
-                imagegif($image);
+                imagegif(image);
                 break;
             case PHPRO_IMG_JPG:
                 imagejpeg($image);
@@ -92,7 +101,14 @@ class Sprite
             case PHPRO_IMG_PNG:
                 imagepng($image);
                 break;
+            case PHPRO_IMG_GD2:
+                imagegd2($image);
+                break;
+            case PHPRO_IMG_RAW:
+                return $image;
+                break;
         }
+
         return ob_get_clean();
     }
 
